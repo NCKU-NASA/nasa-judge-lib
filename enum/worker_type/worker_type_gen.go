@@ -17,7 +17,7 @@ import (
     "gorm.io/gorm/schema"
     "gopkg.in/yaml.v3"
     
-    "github.com/NCKU-NASA/nasa-judge-lib/utils/database"
+    "github.com/NCKU-NASA/nasa-judge-lib/utils/config"
     
     
     "golang.org/x/exp/slices"
@@ -135,7 +135,7 @@ func (c *WorkerTypes) UnmarshalYAML(b []byte) error {
 }
 
 func (c *WorkerTypes) Scan(value interface{}) (err error) {
-    switch database.DBservice {
+    switch config.DBservice {
     case "mysql", "sqlite":
         if val, ok := value.(datatypes.JSON); ok {
             err = json.Unmarshal([]byte(val), c)
@@ -183,7 +183,7 @@ func (c WorkerTypes) Value() (value driver.Value, err error) {
         data = fmt.Sprintf("%s%d,", data, a)
     }
     data = strings.TrimRight(data, ",")
-    switch database.DBservice {
+    switch config.DBservice {
     case "mysql", "sqlite":
         value = datatypes.JSON([]byte(fmt.Sprintf("[%s]", data)))
         err = nil
@@ -195,7 +195,7 @@ func (c WorkerTypes) Value() (value driver.Value, err error) {
 }
 
 func (WorkerTypes) GormDataType() string {
-    switch database.DBservice {
+    switch config.DBservice {
     case "mysql", "sqlite":
 	    return "json"
     case "postgres":

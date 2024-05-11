@@ -14,6 +14,7 @@ import (
 
     "github.com/NCKU-NASA/nasa-judge-lib/utils/password"
     "github.com/NCKU-NASA/nasa-judge-lib/utils/database"
+    "github.com/NCKU-NASA/nasa-judge-lib/utils/config"
 )
 
 type User struct {
@@ -79,7 +80,7 @@ func (user User) GenToken(data string) (string, error) {
     if err != nil {
         return "", err
     }
-    h := hmac.New(sha256.New, []byte(password.GetSecret()))
+    h := hmac.New(sha256.New, []byte(config.Secret))
     h.Write(salt)
     h.Write([]byte(user.Username))
     h.Write([]byte(user.Password))
