@@ -29,9 +29,9 @@ type FrontendVariableTypes []FrontendVariableType
 
 const (
     Download FrontendVariableType = iota
-    Input FrontendVariableType
-    Upload FrontendVariableType
-    VM FrontendVariableType
+    Input
+    Upload
+    VM
     Unknown FrontendVariableType = 255
 )
 var set []string

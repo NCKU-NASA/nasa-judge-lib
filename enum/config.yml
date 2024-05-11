@@ -6,9 +6,9 @@
   init: |-
     const (
         Download FrontendVariableType = iota
-        Input FrontendVariableType
-        Upload FrontendVariableType
-        VM FrontendVariableType
+        Input
+        Upload
+        VM
         Unknown FrontendVariableType = 255
     )
     var set []string
@@ -30,8 +30,8 @@
   init: |-
     const (
         Host WorkerType = iota
-        Docker WorkerType
-        VM WorkerType
+        Docker
+        VM
         Unknown WorkerType = 255
     )
     var set []string

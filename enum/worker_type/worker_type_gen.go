@@ -29,8 +29,8 @@ type WorkerTypes []WorkerType
 
 const (
     Host WorkerType = iota
-    Docker WorkerType
-    VM WorkerType
+    Docker
+    VM
     Unknown WorkerType = 255
 )
 var set []string
