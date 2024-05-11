@@ -13,6 +13,8 @@ import (
     "database/sql/driver"
     "github.com/GehirnInc/crypt"
     _ "github.com/GehirnInc/crypt/sha512_crypt"
+
+    "github.com/NCKU-NASA/nasa-judge-lib/utils/config"
 )
 
 type Password string
@@ -23,20 +25,9 @@ type password struct {
 }
 
 var crypter crypt.Crypter
-var secret string
 
 func init() {
     crypter = crypt.SHA512.New()
-}
-
-func Init(initsecret string) {
-    if secret == "" {
-        secret = initsecret
-    }
-}
-
-func GetSecret() string {
-    return secret
 }
 
 func New(pass string) Password {
@@ -52,7 +43,7 @@ func New(pass string) Password {
 }
 
 func newhmac(salt []byte, pass string) Password {
-    h := hmac.New(sha512.New, []byte(secret))
+    h := hmac.New(sha512.New, []byte(config.Secret))
     h.Write(salt)
     h.Write([]byte(pass))
     return Password(fmt.Sprintf("%s$%s", base64.StdEncoding.EncodeToString(salt), base64.StdEncoding.EncodeToString(h.Sum(nil))))
