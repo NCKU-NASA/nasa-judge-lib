@@ -14,7 +14,11 @@ type ipv4net struct {
 }
 
 func (c ipv4net) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal(c.String())
+    value = ""
+    if c.IPv4Net != nil {
+        value = c.String()
+    }
+    return yaml.Marshal(value)
 }
 
 func (c *ipv4net) UnmarshalYAML(b []byte) error {
@@ -40,6 +44,10 @@ func (c *ipv4net) Scan(value interface{}) (err error) {
 }
 
 func (c ipv4net) Value() (value driver.Value, err error) {
+    if c.IPv4Net == nil {
+        value = ""
+        return
+    }
     value = c.String()
     return
 }

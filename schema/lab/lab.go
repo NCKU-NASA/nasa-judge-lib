@@ -33,11 +33,6 @@ type Lab struct {
 
 func init() {
     database.GetDB().AutoMigrate(&Lab{})
-
-    err := Commit("all")
-    if err != nil {
-        panic(err)
-    }
 }
 
 func Commit(labId string) error {
