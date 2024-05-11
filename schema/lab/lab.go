@@ -20,7 +20,7 @@ const (
 type Lab struct {
     ID uint `gorm:"primaryKey" yaml:"_" json:"-"`
     LabId string `gorm:"unique" yaml:"_" json:"labId"`
-    Promissions []user.Group `yaml:"promissions" json:"promissions"`
+    Promissions []user.Group `gorm:"many2many:lab_promissions" yaml:"promissions" json:"promissions"`
     Deadlines deadlines `yaml:"deadlines" json:"deadlines"`
     Timeout duration `yaml:"timeout" json:"timeout"`
     Network ipv4net `yaml:"network" json:"network"`
