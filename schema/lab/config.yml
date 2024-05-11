@@ -1,0 +1,76 @@
+- name: deadline
+  mkdir: false
+  imports:
+  - '"time"'
+  - '"gopkg.in/yaml.v3"'
+  base: |-
+    struct {
+        Time time.Time `yaml:"time" json:"time"`
+        Score float32 `yaml:"score" json:"score"`
+    }
+  init: |-
+    const (
+        format = "2006-01-02 15:04:05"
+    )
+
+    func (c deadline) MarshalYAML() ([]byte, error) {
+        return yaml.Marshal(struct {
+            Time string `yaml:"time"`
+            Score float32 `yaml:"score"`
+        }{
+            Time: c.Time.Format(format)
+            Score: c.Score
+        })
+    }
+
+    func (c *deadline) UnmarshalYAML(b []byte) error {
+        var tmp struct {
+            Time string `yaml:"time"`
+            Score float32 `yaml:"score"`
+        }
+        err := yaml.Unmarshal(b, &tmp)
+        if err != nil {
+            return err
+        }
+        tmptime, err = time.ParseInLocation(format, tmp.Time, time.Local)
+        if err != nil {
+            return err
+        }
+        *c = deadline{
+            Time: tmptime,
+            Score: c.Score,
+        }
+        return nil
+    }
+- name: command
+  mkdir: false
+  imports: []
+  base: |-
+    struct {
+        Exec []string `yaml:"exec" json:"exec"`
+        Worker worker `yaml:"worker" json:"worker"`
+    }
+  init: ""
+- name: frontendvariable
+  mkdir: false
+  imports: 
+  - '"github.com/NCKU-NASA/nasa-judge-lib/enum/frontend_variable_type"'
+  base: |-
+    struct {
+        Type frontendvariabletype.FrontendVariableType
+        Name string
+    }
+  init: ""
+- name: checkpoint
+  mkdir: false
+  imports: []
+  base: |-
+    struct {
+        Message string `yaml:"message" json:"message"`
+        Weight float32 `yaml:"weight" json:"weight"`
+        Commands commands `yaml:"commands" json:"commands"`
+        Check map[string]int `yaml:"check" json:"check"`
+    }
+  init: ""
+
+

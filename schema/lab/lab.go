@@ -1,0 +1,97 @@
+//go:generate go run ../../gencode.go struct.tmpl config.yml .
+
+package lab
+
+import (
+    "os"
+
+    "golang.org/x/exp/slices"
+    netaddr "github.com/dspinhirne/netaddr-go"
+
+    "github.com/NCKU-NASA/nasa-judge-lib/schema/user"
+)
+
+const (
+    labdir = "./labs"
+)
+
+type Lab struct {
+    ID uint `gorm:"primaryKey" yaml:"_" json:"-"`
+    LabId string `gorm:"unique" yaml:"_" json:"labId"`
+    Promissions []user.Group `yaml:"promissions" json:"promissions"`
+    Deadlines deadlines `yaml:"deadlines" json:"deadlines"`
+    Timeout duration `yaml:"timeout" json:"timeout"`
+    Network ipv4net `yaml:"network" json:"network"`
+    Description string `yaml:"description" json:"description"`
+    Init commands `yaml:"init" json:"init"`
+    Clear commands `yaml:"clear" json:"clear"`
+    CheckPoints checkpoints `yaml:"checkpoints" json:"checkpoints"`
+    FrontendVariable frontendvariables `yaml:"frontendvariable" json:"frontendvariable"`
+}
+
+type ipv4net *netaddr.IPv4Net
+
+func init() {
+    database.GetDB().AutoMigrate(&Lab{})
+
+    err := Commit("all")
+    if err != nil {
+        panic(err)
+    }
+}
+
+func Commit(labId string) error {
+    if labId == "all" {
+        entries, err := os.ReadDir(labdir)
+        if err != nil {
+            return err
+        }
+        for _, e := range entries {
+            if e.IsDir() && len(e.Name()) > 0 && e.Name()[0] != '.' && e.Name() != "all" {
+                err = Commit(e.Name())
+                if err != nil {
+                    return err
+                }
+            }
+        }
+        return nil
+    }
+
+    var lab Lab
+    labyaml, err := os.ReadFile(path.Join(labdir, labId))
+    if err != nil {
+        return err
+    }
+    err = yaml.Unmarshal(labyaml, &lab)
+    if err != nil {
+        return err
+    }
+    lab.LabId = labId
+    result := database.GetDB().Model(&Lab{}).Where("lab_id = ?").Updates(&lab)
+    if result.Error != nil {
+        return result.Error
+    }
+    if result.RowsAffected > 0 {
+        return nil
+    }
+    result = database.GetDB().Model(&Lab{}).Create(&lab)
+    return result.Error
+}
+
+func GetLab(labId string) (lab Lab, err error) {
+    result := database.GetDB().Model(&Lab{}).Where("lab_id = ?", labId).First(&lab)
+    err = result.Error
+    return
+}
+
+func GetLabs() (labs []Lab, err error) {
+    result := database.GetDB().Model(&Lab{}).Find(&labs)
+    err = result.Error
+    return
+}
+
+func (lab Lab) ContainPromission(group string) bool {
+    return slices.ContainsFunc(lab.Promissions, func(g user.Group) bool {
+        return g.Groupname == group
+    })
+}

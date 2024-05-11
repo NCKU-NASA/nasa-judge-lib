@@ -1,0 +1,235 @@
+package {{ .name }}
+
+import (
+    "strings"
+    "strconv"
+    "context"
+    "math/rand"
+    "encoding/json"
+    "fmt"
+    "database/sql/driver"
+    "reflect"
+
+    "gorm.io/datatypes"
+    "gorm.io/driver/mysql"
+    "gorm.io/gorm"
+    "gorm.io/gorm/clause"
+    "gorm.io/gorm/schema"
+    "gopkg.in/yaml.v3"
+    
+    "github.com/NCKU-NASA/nasa-judge-lib/utils/database"
+    
+    {{ range .imports }}
+    {{ . }}
+    {{ end }}
+)
+
+type {{ .name | title }} {{ .basetype }}
+type {{ .name | title }}s []{{ .name | title }}
+
+{{ .init }}
+
+func (c {{ .name | title }}) String() string {
+    if c == {{ .unknown }} {
+        return ""
+    }
+    return {{ .toString }}
+}
+
+func FromString(s string) {{ .name | title }} {
+    if s == "" {
+        return {{ .unknown }}
+    }
+    return {{ .name | title }}({{ .fromString }})
+}
+
+func Random() {{ .name | title }} {
+    return {{ .name | title }}({{ .random }})
+}
+
+func Len() int {
+    return {{ .length }}
+}
+
+func (c {{ .name | title }}) MarshalJSON() ([]byte, error) {
+    return json.Marshal(c.String())
+}
+
+func (c {{ .name | title }}) MarshalYAML() ([]byte, error) {
+    return yaml.Marshal(c.String())
+}
+
+func (c *{{ .name | title }}) UnmarshalJSON(b []byte) error {
+    var num int
+    err := json.Unmarshal(b, &num)
+    if err == nil {
+        *c = {{ .name | title }}(num)
+    } else {
+        var tmp string
+        err = json.Unmarshal(b, &tmp)
+        if err != nil {
+            return err
+        }
+        *c = FromString(tmp)
+        if tmp != "" && *c == {{ .unknown }} {
+            err = fmt.Errorf("Invalid param %s", tmp)
+        }
+    }
+    return err
+}
+
+func (c *{{ .name | title }}) UnmarshalYAML(b []byte) error {
+    var num int
+    err := yaml.Unmarshal(b, &num)
+    if err == nil {
+        *c = {{ .name | title }}(num)
+    } else {
+        var tmp string
+        err = yaml.Unmarshal(b, &tmp)
+        if err != nil {
+            return err
+        }
+        *c = FromString(tmp)
+        if tmp != "" && *c == {{ .unknown }} {
+            err = fmt.Errorf("Invalid param %s", tmp)
+        }
+    }
+    return err
+}
+
+func (c {{ .name | title }}s) MarshalJSON() ([]byte, error) {
+    return json.Marshal([]{{ .name | title }}(c))
+}
+
+func (c {{ .name | title }}s) MarshalYAML() ([]byte, error) {
+    return yaml.Marshal([]{{ .name | title }}(c))
+}
+
+func (c *{{ .name | title }}s) UnmarshalJSON(b []byte) error {
+    var tmp []{{ .name | title }}
+    err := json.Unmarshal(b, &tmp)
+    if err != nil {
+        return err
+    }
+    *c = {{ .name | title }}s(tmp)
+    return err
+}
+
+func (c *{{ .name | title }}s) UnmarshalYAML(b []byte) error {
+    var tmp []{{ .name | title }}
+    err := yaml.Unmarshal(b, &tmp)
+    if err != nil {
+        return err
+    }
+    *c = {{ .name | title }}s(tmp)
+    return err
+}
+
+func (c *{{ .name | title }}s) Scan(value interface{}) (err error) {
+    switch database.DBservice {
+    case "mysql", "sqlite":
+        if val, ok := value.(datatypes.JSON); ok {
+            err = json.Unmarshal([]byte(val), c)
+            if err != nil {
+                return
+            }
+        } else if val, ok := value.(json.RawMessage); ok {
+            err = json.Unmarshal([]byte(val), c)
+            if err != nil {
+                return
+            }
+        } else if val, ok := value.([]byte); ok {
+            err = json.Unmarshal([]byte(val), c)
+            if err != nil {
+                return
+            }
+        } else {
+            err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
+        }
+    case "postgres":
+        if val, ok := value.(string); ok {
+            val = strings.Trim(val, "{}")
+            if val == "" {
+                *c = make({{ .name | title }}s, 0)
+                return
+            }
+            for _, a := range strings.Split(val, ",") {
+                var i int
+                i, err = strconv.Atoi(a)
+                if err != nil {
+                    return
+                }
+                *c = append(*c, {{ .name | title }}(i))
+            }
+        } else {
+            err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
+        }
+    }
+    return
+}
+
+func (c {{ .name | title }}s) Value() (value driver.Value, err error) {
+    data := ""
+    for _, a := range c {
+        data = fmt.Sprintf("%s%d,", data, a)
+    }
+    data = strings.TrimRight(data, ",")
+    switch database.DBservice {
+    case "mysql", "sqlite":
+        value = datatypes.JSON([]byte(fmt.Sprintf("[%s]", data)))
+        err = nil
+    case "postgres":
+        value = fmt.Sprintf("{%s}", data)
+        err = nil
+    }
+    return
+}
+
+func ({{ .name | title }}s) GormDataType() string {
+    switch database.DBservice {
+    case "mysql", "sqlite":
+	    return "json"
+    case "postgres":
+        return "{{ .postgresType }}[]"
+    }
+    return ""
+}
+
+func ({{ .name | title }}s) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+	switch db.Dialector.Name() {
+	case "sqlite":
+		return "JSON"
+	case "mysql":
+		return "JSON"
+	case "postgres":
+		return "{{ .postgresType }}[]"
+	}
+	return ""
+}
+
+func (js {{ .name | title }}s) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+	switch db.Dialector.Name() {
+    case "sqlite":
+        if len(js) == 0 {
+            expr = gorm.Expr("NULL")
+            return
+        }
+        data, _ := js.Value()
+        expr = gorm.Expr("?", string(data.(datatypes.JSON)))
+    case "mysql":
+        if len(js) == 0 {
+            expr = gorm.Expr("NULL")
+            return
+        }
+        data, _ := js.Value()
+        if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {
+            expr = gorm.Expr("CAST(? AS JSON)", string(data.(datatypes.JSON)))
+            return
+        }
+        expr = gorm.Expr("?", string(data.(datatypes.JSON)))
+    case "postgres":
+        data, _ := js.Value()
+        expr = gorm.Expr("?", data)
+	}
+    return
+}
