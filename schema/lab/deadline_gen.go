@@ -30,8 +30,8 @@ func (c deadline) MarshalYAML() ([]byte, error) {
         Time string `yaml:"time"`
         Score float32 `yaml:"score"`
     }{
-        Time: c.Time.Format(format)
-        Score: c.Score
+        Time: c.Time.Format(format),
+        Score: c.Score,
     })
 }
 
