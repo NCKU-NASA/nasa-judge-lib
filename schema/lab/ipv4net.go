@@ -14,7 +14,7 @@ type ipv4net struct {
 }
 
 func (c ipv4net) MarshalYAML() ([]byte, error) {
-    value = ""
+    value := ""
     if c.IPv4Net != nil {
         value = c.String()
     }
