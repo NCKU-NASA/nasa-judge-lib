@@ -14,7 +14,7 @@ import (
 )
 
 const (
-    labdir = "./labs"
+    LabDir = "./labs"
 )
 
 type Lab struct {
@@ -37,7 +37,7 @@ func init() {
 
 func Commit(labId string) error {
     if labId == "all" {
-        entries, err := os.ReadDir(labdir)
+        entries, err := os.ReadDir(LabDir)
         if err != nil {
             return err
         }
@@ -53,7 +53,7 @@ func Commit(labId string) error {
     }
 
     var lab Lab
-    labyaml, err := os.ReadFile(path.Join(labdir, labId))
+    labyaml, err := os.ReadFile(path.Join(LabDir, labId))
     if err != nil {
         return err
     }
