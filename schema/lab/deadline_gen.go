@@ -1,6 +1,7 @@
 package lab
 
 import (
+    "fmt"
     "reflect"
     "encoding/json"
     "database/sql/driver"
@@ -44,7 +45,7 @@ func (c *deadline) UnmarshalYAML(b []byte) error {
     if err != nil {
         return err
     }
-    tmptime, err = time.ParseInLocation(format, tmp.Time, time.Local)
+    tmptime, err := time.ParseInLocation(format, tmp.Time, time.Local)
     if err != nil {
         return err
     }

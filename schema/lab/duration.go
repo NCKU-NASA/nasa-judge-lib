@@ -1,8 +1,12 @@
 package lab
 
 import (
+    "fmt"
     "time"
     "reflect"
+    "database/sql/driver"
+
+    "gopkg.in/yaml.v3"
 )
 
 type duration time.Duration
@@ -17,7 +21,7 @@ func (c *duration) UnmarshalYAML(b []byte) error {
     if err != nil {
         return err
     }
-    *c = time.Duration(c * float64(time.Second))
+    *c = duration(tmp * float64(time.Second))
     return nil
 }
 

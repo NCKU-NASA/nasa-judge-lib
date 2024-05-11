@@ -32,7 +32,7 @@
         if err != nil {
             return err
         }
-        tmptime, err = time.ParseInLocation(format, tmp.Time, time.Local)
+        tmptime, err := time.ParseInLocation(format, tmp.Time, time.Local)
         if err != nil {
             return err
         }
@@ -54,7 +54,7 @@
 - name: frontendvariable
   mkdir: false
   imports: 
-  - '"github.com/NCKU-NASA/nasa-judge-lib/enum/frontend_variable_type"'
+  - 'frontendvariabletype "github.com/NCKU-NASA/nasa-judge-lib/enum/frontend_variable_type"'
   base: |-
     struct {
         Type frontendvariabletype.FrontendVariableType

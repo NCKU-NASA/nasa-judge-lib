@@ -4,11 +4,13 @@ package lab
 
 import (
     "os"
+    "path"
 
+    "gopkg.in/yaml.v3"
     "golang.org/x/exp/slices"
-    netaddr "github.com/dspinhirne/netaddr-go"
 
     "github.com/NCKU-NASA/nasa-judge-lib/schema/user"
+    "github.com/NCKU-NASA/nasa-judge-lib/utils/database"
 )
 
 const (
@@ -28,8 +30,6 @@ type Lab struct {
     CheckPoints checkpoints `yaml:"checkpoints" json:"checkpoints"`
     FrontendVariable frontendvariables `yaml:"frontendvariable" json:"frontendvariable"`
 }
-
-type ipv4net *netaddr.IPv4Net
 
 func init() {
     database.GetDB().AutoMigrate(&Lab{})

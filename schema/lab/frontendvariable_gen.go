@@ -1,13 +1,14 @@
 package lab
 
 import (
+    "fmt"
     "reflect"
     "encoding/json"
     "database/sql/driver"
     "gorm.io/datatypes"
 
     
-    "github.com/NCKU-NASA/nasa-judge-lib/enum/frontend_variable_type"
+    frontendvariabletype "github.com/NCKU-NASA/nasa-judge-lib/enum/frontend_variable_type"
     
 )
 
