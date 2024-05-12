@@ -17,7 +17,7 @@ type checkpoint struct {
     Check map[string]int `yaml:"check" json:"check"`
 }
 
-type checkpoints []checkpoint
+type checkpoints map[string][]checkpoint
 
 
 

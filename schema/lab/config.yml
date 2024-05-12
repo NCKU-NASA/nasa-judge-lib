@@ -8,6 +8,7 @@
         Time time.Time `yaml:"time" json:"time"`
         Score float32 `yaml:"score" json:"score"`
     }
+  listtype: '[]deadline'
   init: |-
     const (
         format = "2006-01-02 15:04:05"
@@ -50,6 +51,7 @@
         Exec []string `yaml:"exec" json:"exec"`
         Worker worker `yaml:"worker" json:"worker"`
     }
+  listtype: '[]command'
   init: ""
 - name: frontendvariable
   mkdir: false
@@ -60,6 +62,7 @@
         Type frontendvariabletype.FrontendVariableType
         Name string
     }
+  listtype: '[]frontendvariable'
   init: ""
 - name: checkpoint
   mkdir: false
@@ -71,6 +74,7 @@
         Commands commands `yaml:"commands" json:"commands"`
         Check map[string]int `yaml:"check" json:"check"`
     }
+  listtype: 'map[string][]checkpoint'
   init: ""
 
 
