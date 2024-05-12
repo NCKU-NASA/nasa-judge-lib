@@ -62,7 +62,7 @@ func Commit(labId string) error {
         return err
     }
     lab.LabId = labId
-    result := database.GetDB().Model(&Lab{}).Where("lab_id = ?").Updates(&lab)
+    result := database.GetDB().Model(&Lab{}).Where("lab_id = ?", lab.LabId).Updates(&lab)
     if result.Error != nil {
         return result.Error
     }
