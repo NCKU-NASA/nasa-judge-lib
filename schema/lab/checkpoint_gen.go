@@ -38,6 +38,9 @@ func (c *checkpoints) Scan(value interface{}) (err error) {
     } else {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
+    if *c == nil {
+        *c = checkpoints(map[string][]checkpoint{})
+    }
     return
 }
 

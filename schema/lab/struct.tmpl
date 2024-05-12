@@ -35,6 +35,9 @@ func (c *{{ .name }}s) Scan(value interface{}) (err error) {
     } else {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
+    if *c == nil {
+        *c = {{ .name }}s({{ .listtype }}{})
+    }
     return
 }
 

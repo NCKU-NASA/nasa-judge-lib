@@ -36,6 +36,9 @@ func (c *commands) Scan(value interface{}) (err error) {
     } else {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
+    if *c == nil {
+        *c = commands([]command{})
+    }
     return
 }
 
