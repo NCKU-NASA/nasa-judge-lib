@@ -62,25 +62,25 @@ func Commit(labId string) error {
         return err
     }
     lab.LabId = labId
-    result := database.GetDB().Model(&Lab{}).Where("lab_id = ?", lab.LabId).Updates(&lab)
+    result := database.GetDB().Model(&Lab{}).Preload("Promissions").Where("lab_id = ?", lab.LabId).Updates(&lab)
     if result.Error != nil {
         return result.Error
     }
     if result.RowsAffected > 0 {
         return nil
     }
-    result = database.GetDB().Model(&Lab{}).Create(&lab)
+    result = database.GetDB().Model(&Lab{}).Preload("Promissions").Create(&lab)
     return result.Error
 }
 
 func GetLab(labId string) (lab Lab, err error) {
-    result := database.GetDB().Model(&Lab{}).Where("lab_id = ?", labId).First(&lab)
+    result := database.GetDB().Model(&Lab{}).Preload("Promissions").Where("lab_id = ?", labId).First(&lab)
     err = result.Error
     return
 }
 
 func GetLabs() (labs []Lab, err error) {
-    result := database.GetDB().Model(&Lab{}).Find(&labs)
+    result := database.GetDB().Model(&Lab{}).Preload("Promissions").Find(&labs)
     err = result.Error
     return
 }
