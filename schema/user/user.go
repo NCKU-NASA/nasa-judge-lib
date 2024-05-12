@@ -88,3 +88,18 @@ func (user User) GenToken(data string) (string, error) {
     h.Write([]byte(time.Now().Format("2006-01-02T15")))
     return fmt.Sprintf("%s:%s", base64.StdEncoding.EncodeToString(salt), base64.StdEncoding.EncodeToString(h.Sum(nil))), nil
 }
+
+func (user User) VerifyToken(token, data string) bool {
+    tokenpart := strings.Split(token, ":")
+    salt, err := base64.StdEncoding.DecodeString(tokenpart[0])
+    if err != nil {
+        return false
+    }
+    h := hmac.New(sha256.New, []byte(config.Secret))
+    h.Write(salt)
+    h.Write([]byte(user.Username))
+    h.Write([]byte(user.Password))
+    h.Write([]byte(data))
+    h.Write([]byte(time.Now().Format("2006-01-02T15")))
+    return fmt.Sprintf("%s:%s", base64.StdEncoding.EncodeToString(salt), base64.StdEncoding.EncodeToString(h.Sum(nil))) == token
+}
