@@ -33,10 +33,10 @@
         if err != nil {
             return err
         }
-        tmptime := time.Unix(1<<63-1, 0).In(time.Local)
-        if tmp.Time != "" {
-            tmptime, err = time.ParseInLocation(format, tmp.Time, time.Local)
+        if tmp.Time == "" {
+            tmp.Time = "9999-12-31 23:59:59"
         }
+        tmptime, err := time.ParseInLocation(format, tmp.Time, time.Local)
         if err != nil {
             return err
         }
