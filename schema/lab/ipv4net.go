@@ -41,6 +41,10 @@ func (c *ipv4net) Scan(value interface{}) (err error) {
         var tmpnet *netaddr.IPv4Net
         tmpnet, err = netaddr.ParseIPv4Net(val)
         *c = ipv4net{IPv4Net: tmpnet}
+    } else if val, ok := value.([]uint8); ok {
+        var tmpnet *netaddr.IPv4Net
+        tmpnet, err = netaddr.ParseIPv4Net(string(val))
+        *c = ipv4net{IPv4Net: tmpnet}
     } else {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
