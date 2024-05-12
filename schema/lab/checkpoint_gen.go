@@ -41,3 +41,32 @@ func (c checkpoints) Value() (value driver.Value, err error) {
     value = datatypes.JSON(tmp)
     return
 }
+
+func (checkpoints) GormDataType() string {
+    return "json"
+}
+
+func (checkpoints) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+	switch db.Dialector.Name() {
+	case "sqlite":
+		return "JSON"
+	case "mysql":
+		return "JSON"
+	case "postgres":
+		return "JSONB"
+	}
+	return ""
+}
+
+func (js checkpoints) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+    if len(js) == 0 {
+        expr = gorm.Expr("NULL")
+        return
+    }
+    data, _ := js.Value()
+    if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {
+        expr = gorm.Expr("CAST(? AS JSON)", string(data.(datatypes.JSON)))
+        return
+    }
+    expr = gorm.Expr("?", string(data.(datatypes.JSON)))
+}
