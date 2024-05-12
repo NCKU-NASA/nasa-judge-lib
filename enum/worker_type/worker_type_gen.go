@@ -64,8 +64,8 @@ func (c WorkerType) MarshalJSON() ([]byte, error) {
     return json.Marshal(c.String())
 }
 
-func (c WorkerType) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal(c.String())
+func (c WorkerType) MarshalYAML() (any, error) {
+    return c.String(), nil
 }
 
 func (c *WorkerType) UnmarshalJSON(b []byte) error {
@@ -87,19 +87,19 @@ func (c *WorkerType) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *WorkerType) UnmarshalYAML(b []byte) error {
+func (c *WorkerType) UnmarshalYAML(b *yaml.Node) error {
     var num int
-    err := yaml.Unmarshal(b, &num)
+    err := b.Decode(&num)
     if err == nil {
         *c = WorkerType(num)
     } else {
         var tmp string
-        err = yaml.Unmarshal(b, &tmp)
+        err = b.Decode(&tmp)
         if err != nil {
             return err
         }
         *c = FromString(tmp)
-        if tmp != "" && *c == Unknown {
+        if b.Value != "" && *c == Unknown {
             err = fmt.Errorf("Invalid param %s", tmp)
         }
     }
@@ -110,8 +110,8 @@ func (c WorkerTypes) MarshalJSON() ([]byte, error) {
     return json.Marshal([]WorkerType(c))
 }
 
-func (c WorkerTypes) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal([]WorkerType(c))
+func (c WorkerTypes) MarshalYAML() (any, error) {
+    return []WorkerType(c), nil
 }
 
 func (c *WorkerTypes) UnmarshalJSON(b []byte) error {
@@ -124,9 +124,9 @@ func (c *WorkerTypes) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *WorkerTypes) UnmarshalYAML(b []byte) error {
+func (c *WorkerTypes) UnmarshalYAML(b *yaml.Node) error {
     var tmp []WorkerType
-    err := yaml.Unmarshal(b, &tmp)
+    err := b.Decode(&tmp)
     if err != nil {
         return err
     }

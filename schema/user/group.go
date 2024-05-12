@@ -2,6 +2,7 @@ package user
 
 import (
     "encoding/json"
+    "gopkg.in/yaml.v3"
 )
 
 type Group struct {
@@ -19,3 +20,15 @@ func (c *Group) UnmarshalJSON(b []byte) error {
     return json.Unmarshal(b, &(c.Groupname))
 }
 
+func (c Group) MarshalYAML() (any, error) {
+    return c.Groupname, nil
+}
+
+func (c *Group) UnmarshalYAML(b *yaml.Node) error {
+    var tmp string
+    err := b.Decode(&tmp)
+    *c = Group{
+        Groupname: tmp,
+    }
+    return err
+}

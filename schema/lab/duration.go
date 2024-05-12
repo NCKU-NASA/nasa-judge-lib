@@ -11,13 +11,13 @@ import (
 
 type duration time.Duration
 
-func (c duration) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal(float64(c) / float64(time.Second))
+func (c duration) MarshalYAML() (any, error) {
+    return float64(c) / float64(time.Second), nil
 }
 
-func (c *duration) UnmarshalYAML(b []byte) error {
+func (c *duration) UnmarshalYAML(b *yaml.Node) error {
     var tmp float64
-    err := yaml.Unmarshal(b, &tmp)
+    err := b.Decode(&tmp)
     if err != nil {
         return err
     }

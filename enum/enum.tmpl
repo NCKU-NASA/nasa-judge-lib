@@ -55,8 +55,8 @@ func (c {{ .name | title }}) MarshalJSON() ([]byte, error) {
     return json.Marshal(c.String())
 }
 
-func (c {{ .name | title }}) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal(c.String())
+func (c {{ .name | title }}) MarshalYAML() (any, error) {
+    return c.String(), nil
 }
 
 func (c *{{ .name | title }}) UnmarshalJSON(b []byte) error {
@@ -78,19 +78,19 @@ func (c *{{ .name | title }}) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *{{ .name | title }}) UnmarshalYAML(b []byte) error {
+func (c *{{ .name | title }}) UnmarshalYAML(b *yaml.Node) error {
     var num int
-    err := yaml.Unmarshal(b, &num)
+    err := b.Decode(&num)
     if err == nil {
         *c = {{ .name | title }}(num)
     } else {
         var tmp string
-        err = yaml.Unmarshal(b, &tmp)
+        err = b.Decode(&tmp)
         if err != nil {
             return err
         }
         *c = FromString(tmp)
-        if tmp != "" && *c == {{ .unknown }} {
+        if b.Value != "" && *c == {{ .unknown }} {
             err = fmt.Errorf("Invalid param %s", tmp)
         }
     }
@@ -101,8 +101,8 @@ func (c {{ .name | title }}s) MarshalJSON() ([]byte, error) {
     return json.Marshal([]{{ .name | title }}(c))
 }
 
-func (c {{ .name | title }}s) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal([]{{ .name | title }}(c))
+func (c {{ .name | title }}s) MarshalYAML() (any, error) {
+    return []{{ .name | title }}(c), nil
 }
 
 func (c *{{ .name | title }}s) UnmarshalJSON(b []byte) error {
@@ -115,9 +115,9 @@ func (c *{{ .name | title }}s) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *{{ .name | title }}s) UnmarshalYAML(b []byte) error {
+func (c *{{ .name | title }}s) UnmarshalYAML(b *yaml.Node) error {
     var tmp []{{ .name | title }}
-    err := yaml.Unmarshal(b, &tmp)
+    err := b.Decode(&tmp)
     if err != nil {
         return err
     }

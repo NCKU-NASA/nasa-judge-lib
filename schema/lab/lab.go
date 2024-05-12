@@ -18,8 +18,8 @@ const (
 )
 
 type Lab struct {
-    ID uint `gorm:"primaryKey" yaml:"_" json:"-"`
-    LabId string `gorm:"unique" yaml:"_" json:"labId"`
+    ID uint `gorm:"primaryKey" yaml:"-" json:"-"`
+    LabId string `gorm:"unique" yaml:"-" json:"labId"`
     Promissions []user.Group `gorm:"many2many:lab_promissions" yaml:"promissions" json:"promissions"`
     Deadlines deadlines `yaml:"deadlines" json:"deadlines"`
     Timeout duration `yaml:"timeout" json:"timeout"`

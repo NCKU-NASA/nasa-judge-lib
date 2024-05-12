@@ -26,26 +26,29 @@ const (
     format = "2006-01-02 15:04:05"
 )
 
-func (c deadline) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal(struct {
+func (c deadline) MarshalYAML() (any, error) {
+    return struct {
         Time string `yaml:"time"`
         Score float32 `yaml:"score"`
     }{
         Time: c.Time.Format(format),
         Score: c.Score,
-    })
+    }, nil
 }
 
-func (c *deadline) UnmarshalYAML(b []byte) error {
+func (c *deadline) UnmarshalYAML(b *yaml.Node) error {
     var tmp struct {
         Time string `yaml:"time"`
         Score float32 `yaml:"score"`
     }
-    err := yaml.Unmarshal(b, &tmp)
+    err := b.Decode(&tmp)
     if err != nil {
         return err
     }
-    tmptime, err := time.ParseInLocation(format, tmp.Time, time.Local)
+    tmptime := time.Unix(1<<63-1, 0).In(time.Local)
+    if tmp.Time != "" {
+        tmptime, err = time.ParseInLocation(format, tmp.Time, time.Local)
+    }
     if err != nil {
         return err
     }

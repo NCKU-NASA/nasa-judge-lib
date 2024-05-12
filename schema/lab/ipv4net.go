@@ -13,19 +13,23 @@ type ipv4net struct {
     *netaddr.IPv4Net
 }
 
-func (c ipv4net) MarshalYAML() ([]byte, error) {
+func (c ipv4net) MarshalYAML() (any, error) {
     value := ""
     if c.IPv4Net != nil {
         value = c.String()
     }
-    return yaml.Marshal(value)
+    return value, nil
 }
 
-func (c *ipv4net) UnmarshalYAML(b []byte) error {
+func (c *ipv4net) UnmarshalYAML(b *yaml.Node) error {
     var tmp string
-    err := yaml.Unmarshal(b, &tmp)
+    err := b.Decode(&tmp)
     if err != nil {
         return err
+    }
+    if tmp == "" {
+        *c = ipv4net{IPv4Net: nil}
+        return nil
     }
     tmpnet, err := netaddr.ParseIPv4Net(tmp)
     *c = ipv4net{IPv4Net: tmpnet}

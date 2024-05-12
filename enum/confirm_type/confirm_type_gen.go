@@ -78,8 +78,8 @@ func (c ConfirmType) MarshalJSON() ([]byte, error) {
     return json.Marshal(c.String())
 }
 
-func (c ConfirmType) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal(c.String())
+func (c ConfirmType) MarshalYAML() (any, error) {
+    return c.String(), nil
 }
 
 func (c *ConfirmType) UnmarshalJSON(b []byte) error {
@@ -101,19 +101,19 @@ func (c *ConfirmType) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *ConfirmType) UnmarshalYAML(b []byte) error {
+func (c *ConfirmType) UnmarshalYAML(b *yaml.Node) error {
     var num int
-    err := yaml.Unmarshal(b, &num)
+    err := b.Decode(&num)
     if err == nil {
         *c = ConfirmType(num)
     } else {
         var tmp string
-        err = yaml.Unmarshal(b, &tmp)
+        err = b.Decode(&tmp)
         if err != nil {
             return err
         }
         *c = FromString(tmp)
-        if tmp != "" && *c == Unknown {
+        if b.Value != "" && *c == Unknown {
             err = fmt.Errorf("Invalid param %s", tmp)
         }
     }
@@ -124,8 +124,8 @@ func (c ConfirmTypes) MarshalJSON() ([]byte, error) {
     return json.Marshal([]ConfirmType(c))
 }
 
-func (c ConfirmTypes) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal([]ConfirmType(c))
+func (c ConfirmTypes) MarshalYAML() (any, error) {
+    return []ConfirmType(c), nil
 }
 
 func (c *ConfirmTypes) UnmarshalJSON(b []byte) error {
@@ -138,9 +138,9 @@ func (c *ConfirmTypes) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *ConfirmTypes) UnmarshalYAML(b []byte) error {
+func (c *ConfirmTypes) UnmarshalYAML(b *yaml.Node) error {
     var tmp []ConfirmType
-    err := yaml.Unmarshal(b, &tmp)
+    err := b.Decode(&tmp)
     if err != nil {
         return err
     }

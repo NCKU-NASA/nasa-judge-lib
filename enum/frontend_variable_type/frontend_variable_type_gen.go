@@ -65,8 +65,8 @@ func (c FrontendVariableType) MarshalJSON() ([]byte, error) {
     return json.Marshal(c.String())
 }
 
-func (c FrontendVariableType) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal(c.String())
+func (c FrontendVariableType) MarshalYAML() (any, error) {
+    return c.String(), nil
 }
 
 func (c *FrontendVariableType) UnmarshalJSON(b []byte) error {
@@ -88,19 +88,19 @@ func (c *FrontendVariableType) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *FrontendVariableType) UnmarshalYAML(b []byte) error {
+func (c *FrontendVariableType) UnmarshalYAML(b *yaml.Node) error {
     var num int
-    err := yaml.Unmarshal(b, &num)
+    err := b.Decode(&num)
     if err == nil {
         *c = FrontendVariableType(num)
     } else {
         var tmp string
-        err = yaml.Unmarshal(b, &tmp)
+        err = b.Decode(&tmp)
         if err != nil {
             return err
         }
         *c = FromString(tmp)
-        if tmp != "" && *c == Unknown {
+        if b.Value != "" && *c == Unknown {
             err = fmt.Errorf("Invalid param %s", tmp)
         }
     }
@@ -111,8 +111,8 @@ func (c FrontendVariableTypes) MarshalJSON() ([]byte, error) {
     return json.Marshal([]FrontendVariableType(c))
 }
 
-func (c FrontendVariableTypes) MarshalYAML() ([]byte, error) {
-    return yaml.Marshal([]FrontendVariableType(c))
+func (c FrontendVariableTypes) MarshalYAML() (any, error) {
+    return []FrontendVariableType(c), nil
 }
 
 func (c *FrontendVariableTypes) UnmarshalJSON(b []byte) error {
@@ -125,9 +125,9 @@ func (c *FrontendVariableTypes) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *FrontendVariableTypes) UnmarshalYAML(b []byte) error {
+func (c *FrontendVariableTypes) UnmarshalYAML(b *yaml.Node) error {
     var tmp []FrontendVariableType
-    err := yaml.Unmarshal(b, &tmp)
+    err := b.Decode(&tmp)
     if err != nil {
         return err
     }
