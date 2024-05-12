@@ -2,6 +2,7 @@ package lab
 
 import (
     "fmt"
+    "strings"
     "reflect"
     "context"
     "encoding/json"
@@ -72,4 +73,5 @@ func (js commands) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr
         return
     }
     expr = gorm.Expr("?", string(data.(datatypes.JSON)))
+    return
 }
