@@ -14,21 +14,21 @@ import (
     "gorm.io/gorm/schema"
 
     
-    frontendvariabletype "github.com/NCKU-NASA/nasa-judge-lib/enum/frontend_variable_type"
+    contenttype "github.com/NCKU-NASA/nasa-judge-lib/enum/content_type"
     
 )
 
-type frontendvariable struct {
-    Type frontendvariabletype.FrontendVariableType
+type content struct {
+    Type contenttype.ContentType
     Name string
 }
 
-type frontendvariables []frontendvariable
+type contents []content
 
 
 
 
-func (c *frontendvariables) Scan(value interface{}) (err error) {
+func (c *contents) Scan(value interface{}) (err error) {
     if val, ok := value.(datatypes.JSON); ok {
         err = json.Unmarshal([]byte(val), c)
     } else if val, ok := value.(json.RawMessage); ok {
@@ -41,18 +41,18 @@ func (c *frontendvariables) Scan(value interface{}) (err error) {
     return
 }
 
-func (c frontendvariables) Value() (value driver.Value, err error) {
+func (c contents) Value() (value driver.Value, err error) {
     var tmp []byte
     tmp, err = json.Marshal(c)
     value = datatypes.JSON(tmp)
     return
 }
 
-func (frontendvariables) GormDataType() string {
+func (contents) GormDataType() string {
     return "json"
 }
 
-func (frontendvariables) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+func (contents) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	switch db.Dialector.Name() {
 	case "sqlite":
 		return "JSON"
@@ -64,7 +64,7 @@ func (frontendvariables) GormDBDataType(db *gorm.DB, field *schema.Field) string
 	return ""
 }
 
-func (js frontendvariables) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+func (js contents) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
     if len(js) == 0 {
         expr = gorm.Expr("NULL")
         return

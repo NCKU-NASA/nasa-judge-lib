@@ -1,4 +1,4 @@
-package frontend_variable_type
+package content_type
 
 import (
     "strings"
@@ -24,56 +24,56 @@ import (
     
 )
 
-type FrontendVariableType byte
-type FrontendVariableTypes []FrontendVariableType
+type ContentType byte
+type ContentTypes []ContentType
 
 const (
-    Download FrontendVariableType = iota
+    Download ContentType = iota
     Input
     Upload
     VM
-    Unknown FrontendVariableType = 255
+    Unknown ContentType = 255
 )
 var set []string
 func init() {
     set = []string{"Download", "Input", "Upload", "VM"}
 }
 
-func (c FrontendVariableType) String() string {
+func (c ContentType) String() string {
     if c == Unknown {
         return ""
     }
     return set[c]
 }
 
-func FromString(s string) FrontendVariableType {
+func FromString(s string) ContentType {
     if s == "" {
         return Unknown
     }
-    return FrontendVariableType(byte(slices.Index(set, s)))
+    return ContentType(byte(slices.Index(set, s)))
 }
 
-func Random() FrontendVariableType {
-    return FrontendVariableType(rand.Intn(Len()))
+func Random() ContentType {
+    return ContentType(rand.Intn(Len()))
 }
 
 func Len() int {
     return len(set)
 }
 
-func (c FrontendVariableType) MarshalJSON() ([]byte, error) {
+func (c ContentType) MarshalJSON() ([]byte, error) {
     return json.Marshal(c.String())
 }
 
-func (c FrontendVariableType) MarshalYAML() (any, error) {
+func (c ContentType) MarshalYAML() (any, error) {
     return c.String(), nil
 }
 
-func (c *FrontendVariableType) UnmarshalJSON(b []byte) error {
+func (c *ContentType) UnmarshalJSON(b []byte) error {
     var num int
     err := json.Unmarshal(b, &num)
     if err == nil {
-        *c = FrontendVariableType(num)
+        *c = ContentType(num)
     } else {
         var tmp string
         err = json.Unmarshal(b, &tmp)
@@ -88,11 +88,11 @@ func (c *FrontendVariableType) UnmarshalJSON(b []byte) error {
     return err
 }
 
-func (c *FrontendVariableType) UnmarshalYAML(b *yaml.Node) error {
+func (c *ContentType) UnmarshalYAML(b *yaml.Node) error {
     var num int
     err := b.Decode(&num)
     if err == nil {
-        *c = FrontendVariableType(num)
+        *c = ContentType(num)
     } else {
         var tmp string
         err = b.Decode(&tmp)
@@ -107,35 +107,35 @@ func (c *FrontendVariableType) UnmarshalYAML(b *yaml.Node) error {
     return err
 }
 
-func (c FrontendVariableTypes) MarshalJSON() ([]byte, error) {
-    return json.Marshal([]FrontendVariableType(c))
+func (c ContentTypes) MarshalJSON() ([]byte, error) {
+    return json.Marshal([]ContentType(c))
 }
 
-func (c FrontendVariableTypes) MarshalYAML() (any, error) {
-    return []FrontendVariableType(c), nil
+func (c ContentTypes) MarshalYAML() (any, error) {
+    return []ContentType(c), nil
 }
 
-func (c *FrontendVariableTypes) UnmarshalJSON(b []byte) error {
-    var tmp []FrontendVariableType
+func (c *ContentTypes) UnmarshalJSON(b []byte) error {
+    var tmp []ContentType
     err := json.Unmarshal(b, &tmp)
     if err != nil {
         return err
     }
-    *c = FrontendVariableTypes(tmp)
+    *c = ContentTypes(tmp)
     return err
 }
 
-func (c *FrontendVariableTypes) UnmarshalYAML(b *yaml.Node) error {
-    var tmp []FrontendVariableType
+func (c *ContentTypes) UnmarshalYAML(b *yaml.Node) error {
+    var tmp []ContentType
     err := b.Decode(&tmp)
     if err != nil {
         return err
     }
-    *c = FrontendVariableTypes(tmp)
+    *c = ContentTypes(tmp)
     return err
 }
 
-func (c *FrontendVariableTypes) Scan(value interface{}) (err error) {
+func (c *ContentTypes) Scan(value interface{}) (err error) {
     switch config.DBservice {
     case "mysql", "sqlite":
         if val, ok := value.(datatypes.JSON); ok {
@@ -160,7 +160,7 @@ func (c *FrontendVariableTypes) Scan(value interface{}) (err error) {
         if val, ok := value.(string); ok {
             val = strings.Trim(val, "{}")
             if val == "" {
-                *c = make(FrontendVariableTypes, 0)
+                *c = make(ContentTypes, 0)
                 return
             }
             for _, a := range strings.Split(val, ",") {
@@ -169,7 +169,7 @@ func (c *FrontendVariableTypes) Scan(value interface{}) (err error) {
                 if err != nil {
                     return
                 }
-                *c = append(*c, FrontendVariableType(i))
+                *c = append(*c, ContentType(i))
             }
         } else {
             err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
@@ -178,7 +178,7 @@ func (c *FrontendVariableTypes) Scan(value interface{}) (err error) {
     return
 }
 
-func (c FrontendVariableTypes) Value() (value driver.Value, err error) {
+func (c ContentTypes) Value() (value driver.Value, err error) {
     data := ""
     for _, a := range c {
         data = fmt.Sprintf("%s%d,", data, a)
@@ -195,7 +195,7 @@ func (c FrontendVariableTypes) Value() (value driver.Value, err error) {
     return
 }
 
-func (FrontendVariableTypes) GormDataType() string {
+func (ContentTypes) GormDataType() string {
     switch config.DBservice {
     case "mysql", "sqlite":
 	    return "json"
@@ -205,7 +205,7 @@ func (FrontendVariableTypes) GormDataType() string {
     return ""
 }
 
-func (FrontendVariableTypes) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+func (ContentTypes) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	switch db.Dialector.Name() {
 	case "sqlite":
 		return "JSON"
@@ -217,7 +217,7 @@ func (FrontendVariableTypes) GormDBDataType(db *gorm.DB, field *schema.Field) st
 	return ""
 }
 
-func (js FrontendVariableTypes) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+func (js ContentTypes) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
 	switch db.Dialector.Name() {
     case "sqlite":
         if len(js) == 0 {

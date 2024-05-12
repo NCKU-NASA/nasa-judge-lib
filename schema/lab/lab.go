@@ -28,7 +28,7 @@ type Lab struct {
     Init commands `yaml:"init" json:"init"`
     Clear commands `yaml:"clear" json:"clear"`
     CheckPoints checkpoints `yaml:"checkpoints" json:"checkpoints"`
-    FrontendVariable frontendvariables `yaml:"frontendvariable" json:"frontendvariable"`
+    Contents contents `yaml:"contents" json:"contents"`
 }
 
 func init() {

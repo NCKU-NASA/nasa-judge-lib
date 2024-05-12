@@ -56,16 +56,16 @@
     }
   listtype: '[]command'
   init: ""
-- name: frontendvariable
+- name: content
   mkdir: false
   imports: 
-  - 'frontendvariabletype "github.com/NCKU-NASA/nasa-judge-lib/enum/frontend_variable_type"'
+  - 'contenttype "github.com/NCKU-NASA/nasa-judge-lib/enum/content_type"'
   base: |-
     struct {
-        Type frontendvariabletype.FrontendVariableType
+        Type contenttype.ContentType
         Name string
     }
-  listtype: '[]frontendvariable'
+  listtype: '[]content'
   init: ""
 - name: checkpoint
   mkdir: false

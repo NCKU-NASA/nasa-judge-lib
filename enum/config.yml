@@ -1,15 +1,15 @@
-- name: frontend_variable_type
+- name: content_type
   mkdir: true
   imports:
   - '"golang.org/x/exp/slices"'
   basetype: byte
   init: |-
     const (
-        Download FrontendVariableType = iota
+        Download ContentType = iota
         Input
         Upload
         VM
-        Unknown FrontendVariableType = 255
+        Unknown ContentType = 255
     )
     var set []string
     func init() {
