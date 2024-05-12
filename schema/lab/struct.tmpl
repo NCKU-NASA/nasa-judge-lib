@@ -36,7 +36,7 @@ func (c *{{ .name }}s) Scan(value interface{}) (err error) {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
     if *c == nil {
-        *c = {{ .name }}s({{ .listtype }}{})
+        *c = {{ .name }}s{}
     }
     return
 }
@@ -65,9 +65,8 @@ func ({{ .name }}s) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 }
 
 func (js {{ .name }}s) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
-    if len(js) == 0 {
-        expr = gorm.Expr("NULL")
-        return
+    if js == nil {
+        js = {{ .name }}s{}
     }
     data, _ := js.Value()
     if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {
