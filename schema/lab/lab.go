@@ -55,7 +55,7 @@ func Commit(labId string) error {
     var lab Lab
     labyaml, err := os.ReadFile(path.Join(LabDir, labId, "config.yml"))
     if err != nil {
-        return err
+        return nil
     }
     err = yaml.Unmarshal(labyaml, &lab)
     if err != nil {
