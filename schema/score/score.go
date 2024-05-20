@@ -87,6 +87,9 @@ func (c Scores) Contain(score Score) bool {
 
 func (c Scores) MarshalJSON() ([]byte, error) {
     result := make(map[string]map[string][]Score)
+    if c.KeyField == "" {
+        c.KeyField = "username"
+    }
     for _, score := range c.Scores {
         if result[score.Lab.LabId] == nil {
             result[score.Lab.LabId] = make(map[string][]Score)
