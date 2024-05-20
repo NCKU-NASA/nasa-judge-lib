@@ -166,7 +166,7 @@ func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
             return
         }
     }
-    if org == nil {
+    if org.Scores == nil {
         nowscore := Score{
             UserID: userdata.ID,
             User: &userdata,
