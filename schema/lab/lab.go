@@ -21,14 +21,14 @@ type Lab struct {
     ID uint `gorm:"primaryKey" yaml:"-" json:"-"`
     LabId string `gorm:"unique" yaml:"-" json:"labId"`
     Promissions []user.Group `gorm:"many2many:lab_promissions" yaml:"promissions" json:"promissions"`
-    Deadlines deadlines `yaml:"deadlines" json:"deadlines"`
+    Deadlines Deadlines `yaml:"deadlines" json:"deadlines"`
     Timeout duration `yaml:"timeout" json:"timeout"`
     Network ipv4net `yaml:"network" json:"network"`
     Description string `yaml:"description" json:"description"`
-    Init commands `yaml:"init" json:"init"`
-    Clear commands `yaml:"clear" json:"clear"`
-    CheckPoints checkpoints `yaml:"checkpoints" json:"checkpoints"`
-    Contents contents `yaml:"contents" json:"contents"`
+    Init Commands `yaml:"init" json:"init"`
+    Clear Commands `yaml:"clear" json:"clear"`
+    CheckPoints CheckPoints `yaml:"checkpoints" json:"checkpoints"`
+    Contents Contents `yaml:"contents" json:"contents"`
 }
 
 func init() {

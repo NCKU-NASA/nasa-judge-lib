@@ -16,19 +16,20 @@ import (
     
 )
 
-type checkpoint struct {
+type CheckPoint struct {
     Message string `yaml:"message" json:"message"`
     Weight float32 `yaml:"weight" json:"weight"`
-    Commands commands `yaml:"commands" json:"commands"`
-    Check map[string]int `yaml:"check" json:"check"`
+    Commands Commands `yaml:"commands" json:"commands,omitempty"`
+    Check map[string]int `yaml:"check" json:"check,omitempty"`
+    Correct bool `yaml:"-" json:"correct"`
 }
 
-type checkpoints map[string][]checkpoint
+type CheckPoints map[string][]CheckPoint
 
 
 
 
-func (c *checkpoints) Scan(value interface{}) (err error) {
+func (c *CheckPoints) Scan(value interface{}) (err error) {
     if val, ok := value.(datatypes.JSON); ok {
         err = json.Unmarshal([]byte(val), c)
     } else if val, ok := value.(json.RawMessage); ok {
@@ -39,23 +40,23 @@ func (c *checkpoints) Scan(value interface{}) (err error) {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
     if *c == nil {
-        *c = checkpoints{}
+        *c = CheckPoints{}
     }
     return
 }
 
-func (c checkpoints) Value() (value driver.Value, err error) {
+func (c CheckPoints) Value() (value driver.Value, err error) {
     var tmp []byte
     tmp, err = json.Marshal(c)
     value = datatypes.JSON(tmp)
     return
 }
 
-func (checkpoints) GormDataType() string {
+func (CheckPoints) GormDataType() string {
     return "json"
 }
 
-func (checkpoints) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+func (CheckPoints) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	switch db.Dialector.Name() {
 	case "sqlite":
 		return "JSON"
@@ -67,9 +68,9 @@ func (checkpoints) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	return ""
 }
 
-func (js checkpoints) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+func (js CheckPoints) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
     if js == nil {
-        js = checkpoints{}
+        js = CheckPoints{}
     }
     data, _ := js.Value()
     if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {

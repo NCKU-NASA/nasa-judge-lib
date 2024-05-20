@@ -14,21 +14,19 @@ import (
     "gorm.io/gorm/schema"
 
     
-    contenttype "github.com/NCKU-NASA/nasa-judge-lib/enum/content_type"
-    
 )
 
-type content struct {
-    Type contenttype.ContentType
-    Name string
+type Command struct {
+    Exec []string `yaml:"exec" json:"exec"`
+    Worker worker `yaml:"worker" json:"worker"`
 }
 
-type contents []content
+type Commands []Command
 
 
 
 
-func (c *contents) Scan(value interface{}) (err error) {
+func (c *Commands) Scan(value interface{}) (err error) {
     if val, ok := value.(datatypes.JSON); ok {
         err = json.Unmarshal([]byte(val), c)
     } else if val, ok := value.(json.RawMessage); ok {
@@ -39,23 +37,23 @@ func (c *contents) Scan(value interface{}) (err error) {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
     if *c == nil {
-        *c = contents{}
+        *c = Commands{}
     }
     return
 }
 
-func (c contents) Value() (value driver.Value, err error) {
+func (c Commands) Value() (value driver.Value, err error) {
     var tmp []byte
     tmp, err = json.Marshal(c)
     value = datatypes.JSON(tmp)
     return
 }
 
-func (contents) GormDataType() string {
+func (Commands) GormDataType() string {
     return "json"
 }
 
-func (contents) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+func (Commands) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	switch db.Dialector.Name() {
 	case "sqlite":
 		return "JSON"
@@ -67,9 +65,9 @@ func (contents) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	return ""
 }
 
-func (js contents) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+func (js Commands) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
     if js == nil {
-        js = contents{}
+        js = Commands{}
     }
     data, _ := js.Value()
     if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {

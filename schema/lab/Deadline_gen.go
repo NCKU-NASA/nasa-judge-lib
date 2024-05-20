@@ -20,19 +20,19 @@ import (
     
 )
 
-type deadline struct {
+type Deadline struct {
     Time time.Time `yaml:"time" json:"time"`
     Score float32 `yaml:"score" json:"score"`
 }
 
-type deadlines []deadline
+type Deadlines []Deadline
 
 
 const (
     format = "2006-01-02 15:04:05"
 )
 
-func (c deadline) MarshalYAML() (any, error) {
+func (c Deadline) MarshalYAML() (any, error) {
     return struct {
         Time string `yaml:"time"`
         Score float32 `yaml:"score"`
@@ -42,7 +42,7 @@ func (c deadline) MarshalYAML() (any, error) {
     }, nil
 }
 
-func (c *deadline) UnmarshalYAML(b *yaml.Node) error {
+func (c *Deadline) UnmarshalYAML(b *yaml.Node) error {
     var tmp struct {
         Time string `yaml:"time"`
         Score float32 `yaml:"score"`
@@ -58,14 +58,14 @@ func (c *deadline) UnmarshalYAML(b *yaml.Node) error {
     if err != nil {
         return err
     }
-    *c = deadline{
+    *c = Deadline{
         Time: tmptime,
         Score: c.Score,
     }
     return nil
 }
 
-func (c *deadlines) Scan(value interface{}) (err error) {
+func (c *Deadlines) Scan(value interface{}) (err error) {
     if val, ok := value.(datatypes.JSON); ok {
         err = json.Unmarshal([]byte(val), c)
     } else if val, ok := value.(json.RawMessage); ok {
@@ -76,23 +76,23 @@ func (c *deadlines) Scan(value interface{}) (err error) {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
     if *c == nil {
-        *c = deadlines{}
+        *c = Deadlines{}
     }
     return
 }
 
-func (c deadlines) Value() (value driver.Value, err error) {
+func (c Deadlines) Value() (value driver.Value, err error) {
     var tmp []byte
     tmp, err = json.Marshal(c)
     value = datatypes.JSON(tmp)
     return
 }
 
-func (deadlines) GormDataType() string {
+func (Deadlines) GormDataType() string {
     return "json"
 }
 
-func (deadlines) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+func (Deadlines) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	switch db.Dialector.Name() {
 	case "sqlite":
 		return "JSON"
@@ -104,9 +104,9 @@ func (deadlines) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	return ""
 }
 
-func (js deadlines) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+func (js Deadlines) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
     if js == nil {
-        js = deadlines{}
+        js = Deadlines{}
     }
     data, _ := js.Value()
     if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {

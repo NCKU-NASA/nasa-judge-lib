@@ -1,4 +1,4 @@
-- name: deadline
+- name: Deadline
   mkdir: false
   imports:
   - '"time"'
@@ -8,13 +8,13 @@
         Time time.Time `yaml:"time" json:"time"`
         Score float32 `yaml:"score" json:"score"`
     }
-  listtype: '[]deadline'
+  listtype: '[]Deadline'
   init: |-
     const (
         format = "2006-01-02 15:04:05"
     )
 
-    func (c deadline) MarshalYAML() (any, error) {
+    func (c Deadline) MarshalYAML() (any, error) {
         return struct {
             Time string `yaml:"time"`
             Score float32 `yaml:"score"`
@@ -24,7 +24,7 @@
         }, nil
     }
 
-    func (c *deadline) UnmarshalYAML(b *yaml.Node) error {
+    func (c *Deadline) UnmarshalYAML(b *yaml.Node) error {
         var tmp struct {
             Time string `yaml:"time"`
             Score float32 `yaml:"score"`
@@ -40,13 +40,13 @@
         if err != nil {
             return err
         }
-        *c = deadline{
+        *c = Deadline{
             Time: tmptime,
             Score: c.Score,
         }
         return nil
     }
-- name: command
+- name: Command
   mkdir: false
   imports: []
   base: |-
@@ -54,30 +54,32 @@
         Exec []string `yaml:"exec" json:"exec"`
         Worker worker `yaml:"worker" json:"worker"`
     }
-  listtype: '[]command'
+  listtype: '[]Command'
   init: ""
-- name: content
+- name: Content
   mkdir: false
   imports: 
   - 'contenttype "github.com/NCKU-NASA/nasa-judge-lib/enum/content_type"'
   base: |-
     struct {
-        Type contenttype.ContentType
-        Name string
+        Type contenttype.ContentType `yaml:"type" json:"type"`
+        Name string `yaml:"name" json:"name"`
+        Data string `yaml:"-" json:"data,omitempty"`
     }
-  listtype: '[]content'
+  listtype: '[]Content'
   init: ""
-- name: checkpoint
+- name: CheckPoint
   mkdir: false
   imports: []
   base: |-
     struct {
         Message string `yaml:"message" json:"message"`
         Weight float32 `yaml:"weight" json:"weight"`
-        Commands commands `yaml:"commands" json:"commands"`
-        Check map[string]int `yaml:"check" json:"check"`
+        Commands Commands `yaml:"commands" json:"commands,omitempty"`
+        Check map[string]int `yaml:"check" json:"check,omitempty"`
+        Correct bool `yaml:"-" json:"correct"`
     }
-  listtype: 'map[string][]checkpoint'
+  listtype: 'map[string][]CheckPoint'
   init: ""
 
 
