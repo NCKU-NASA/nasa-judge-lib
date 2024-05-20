@@ -17,7 +17,7 @@ type Score struct {
     User *user.User `gorm:"foreignKey:UserID" json:"user,omitempty"`
     LabID uint `json:"-"`
     Lab *lab.Lab `gorm:"foreignKey:LabID" json:"lab,omitempty"`
-    Score float32 `json:"score"`
+    Score float32 `gorm:"-" json:"score"`
     Result lab.CheckPoints `json:"result,omitempty"`
     Data lab.Contents `json:"data,omitempty"`
     Stdout string `json:"stdout,omitempty"`
@@ -177,9 +177,6 @@ func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
         }
 
         req := database.GetDB().Model(&Score{}).Preload("User").Preload("Lab").Where(nowscore)
-        if c.Score != nil {
-            req.Where("score = ?", *(c.Score))
-        }
         result := req.Find(&(scores.Scores))
         if result.Error != nil {
             err = result.Error
@@ -217,20 +214,34 @@ func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
             }
         }
     }
-    if c.UseDeadline {
-        for idx, score := range scores.Scores {
-            calced := false
+    var tmpscores []Score
+    for idx, score := range scores.Scores {
+        var basescore float32
+        for _, allcheckpoint := range score.Result {
+            for _, checkpoint := range allcheckpoint {
+                if checkpoint.Correct {
+                    basescore += checkpoint.Weight
+                }
+            }
+        }
+
+        if c.UseDeadline {
+            scores.Scores[idx].Score = 0
             for _, deadline := range score.Lab.Deadlines {
                 if score.CreatedAt.Before(deadline.Time) {
-                    scores.Scores[idx].Score = score.Score * deadline.Score
-                    calced = true
+                    scores.Scores[idx].Score = basescore * deadline.Score
                     break
                 }
             }
-            if !calced {
-                scores.Scores[idx].Score = 0
-            }
+        } else {
+            scores.Scores[idx].Score = basescore
         }
+        if c.Score != nil && scores.Scores[idx].Score == *(c.Score) {
+            tmpscores = append(tmpscores, scores.Scores[idx])
+        }
+    }
+    if c.Score != nil {
+        scores.Scores = tmpscores
     }
     if c.Max {
         maxmap := make(map[uint]map[uint]Score)
