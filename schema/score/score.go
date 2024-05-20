@@ -133,12 +133,12 @@ func (c *Scores) UnmarshalJSON(b []byte) error {
                 }
             }
             for _, score := range scores {
-                tmpuser := usermap[username]
-                tmplab := nowlab
-                score.UserID = tmpuser.ID
-                score.User = &tmpuser
-                score.LabID = tmplab.ID
-                score.Lab = &tmplab
+                score.UserID = usermap[username].ID
+                score.User = new(user.User)
+                *(score.User) = usermap[username]
+                score.LabID = nowlab.ID
+                score.Lab = new(lab.Lab)
+                *(score.Lab) = nowlab
                 c.Scores = append(c.Scores, score)
             }
         }
