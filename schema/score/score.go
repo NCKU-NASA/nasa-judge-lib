@@ -190,6 +190,8 @@ func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
                     scores.Scores = append(scores.Scores, nowscore)
                 }
             }
+        } else {
+            scores.Scores = org.Scores
         }
     }
     scores.KeyField = c.KeyField
