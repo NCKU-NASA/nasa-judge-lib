@@ -217,13 +217,21 @@ func (c ScoreFilter) GetScores() (scores Scores, err error) {
         }
     }
     if c.Max {
-        var maxscore Score
+        maxmap := make(map[uint]map[uint]Score)
         for _, score := range scores.Scores {
-            if score.Score >= maxscore.Score {
-                maxscore = score
+            if maxmap[score.Lab.ID] == nil {
+                maxmap[score.Lab.ID] = make(map[uint]Score)
+            }
+            if score.Score >= maxmap[score.Lab.ID][score.User.ID].Score {
+                maxmap[score.Lab.ID][score.User.ID] = score
             }
         }
-        scores.Scores = []Score{maxscore}
+        scores.Scores = make([]Score, 0)
+        for _, usermapscore := range maxmap {
+            for _, maxscore := range usermapscore {
+                scores.Scores = append(scores.Scores, maxscore)
+            }
+        }
     }
     return
 }
