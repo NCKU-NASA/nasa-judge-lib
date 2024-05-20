@@ -30,6 +30,17 @@ func init() {
     database.GetDB().AutoMigrate(&User{})
 }
 
+func (user User) ToMap() (result map[string]any) {
+    result = make(map[string]any)
+    result["id"] = user.ID
+    result["username"] = user.Username
+    result["password"] = user.Password
+    result["studentId"] = user.StudentId
+    result["email"] = user.Email
+    result["groups"] = user.Groups
+    return
+}
+
 func (user *User) Fix() {
     reg := regexp.MustCompile(`[^0-9a-zA-Z]`)
     user.Username = strings.ToLower(reg.ReplaceAllString(user.Username, ""))
@@ -69,7 +80,7 @@ func (user *User) Update() error {
 }
 
 func (user User) ContainGroup(group string) bool {
-    return slices.ContainsFunc(user.Groups, func(g *Group) bool {
+    return group == "all" || slices.ContainsFunc(user.Groups, func(g *Group) bool {
         return g.Groupname == group
     })    
 }

@@ -86,7 +86,7 @@ func GetLabs() (labs []Lab, err error) {
 }
 
 func (lab Lab) ContainPromission(group string) bool {
-    return slices.ContainsFunc(lab.Promissions, func(g user.Group) bool {
+    return group == "all" || slices.ContainsFunc(lab.Promissions, func(g user.Group) bool {
         return g.Groupname == group
     })
 }
