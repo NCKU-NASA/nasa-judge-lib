@@ -215,17 +215,19 @@ func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
             }
         }
     }
-    for idx, score := range scores.Scores {
-        calced := false
-        for _, deadline := range score.Lab.Deadlines {
-            if score.CreatedAt.Before(deadline.Time) {
-                scores.Scores[idx].Score = score.Score * deadline.Score
-                calced = true
-                break
+    if c.UseDeadline {
+        for idx, score := range scores.Scores {
+            calced := false
+            for _, deadline := range score.Lab.Deadlines {
+                if score.CreatedAt.Before(deadline.Time) {
+                    scores.Scores[idx].Score = score.Score * deadline.Score
+                    calced = true
+                    break
+                }
             }
-        }
-        if !calced {
-            scores.Scores[idx].Score = 0
+            if !calced {
+                scores.Scores[idx].Score = 0
+            }
         }
     }
     if c.Max {
