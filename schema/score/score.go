@@ -144,7 +144,7 @@ func (c *Scores) UnmarshalJSON(b []byte) error {
     return nil
 }
 
-func (c ScoreFilter) GetScores() (scores Scores, err error) {
+func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
     var userdata user.User
     c.User = user.User{
         Username: c.User.Username,
@@ -166,21 +166,31 @@ func (c ScoreFilter) GetScores() (scores Scores, err error) {
             return
         }
     }
-    nowscore := Score{
-        UserID: userdata.ID,
-        User: &userdata,
-        LabID: labdata.ID,
-        Lab: &labdata,
-    }
+    if org == nil {
+        nowscore := Score{
+            UserID: userdata.ID,
+            User: &userdata,
+            LabID: labdata.ID,
+            Lab: &labdata,
+        }
 
-    req := database.GetDB().Model(&Score{}).Preload("User").Preload("Lab").Where(nowscore)
-    if c.Score != nil {
-        req.Where("score = ?", *(c.Score))
-    }
-    result := req.Find(&(scores.Scores))
-    if result.Error != nil {
-        err = result.Error
-        return
+        req := database.GetDB().Model(&Score{}).Preload("User").Preload("Lab").Where(nowscore)
+        if c.Score != nil {
+            req.Where("score = ?", *(c.Score))
+        }
+        result := req.Find(&(scores.Scores))
+        if result.Error != nil {
+            err = result.Error
+            return
+        }
+    } else {
+        if userdata.ID != 0 || labdata.ID != 0 {
+            for _, nowscore := range org.Scores {
+                if (userdata.ID == 0 || nowscore.User.ID == userdata.ID) && (labdata.ID == 0 || nowscore.Lab.ID == labdata.ID) {
+                    scores.Scores = append(scores.Scores, nowscore)
+                }
+            }
+        }
     }
     scores.KeyField = c.KeyField
     scores.ShowFields = c.ShowFields
