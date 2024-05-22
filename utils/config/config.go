@@ -2,10 +2,12 @@ package config
 
 import (
     "os"
+    "time"
     "strconv"
 )
 
 var Debug bool
+var TZ *time.Location
 var Secret string
 var DBservice string
 var DBuser string
@@ -35,6 +37,10 @@ func init() {
         if err != nil {
             DBdebug = false
         }
+    }
+    TZ, err = time.LoadLocation(os.Getenv("TZ"))
+    if err != nil {
+        panic(err)
     }
     Secret = os.Getenv("SECRET")
     DBservice = os.Getenv("DBSERVICE")
