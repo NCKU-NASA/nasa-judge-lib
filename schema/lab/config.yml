@@ -42,7 +42,7 @@
         }
         *c = Deadline{
             Time: tmptime,
-            Score: c.Score,
+            Score: tmp.Score,
         }
         return nil
     }

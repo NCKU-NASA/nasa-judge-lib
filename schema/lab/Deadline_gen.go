@@ -60,7 +60,7 @@ func (c *Deadline) UnmarshalYAML(b *yaml.Node) error {
     }
     *c = Deadline{
         Time: tmptime,
-        Score: c.Score,
+        Score: tmp.Score,
     }
     return nil
 }
