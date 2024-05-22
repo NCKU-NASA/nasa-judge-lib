@@ -177,6 +177,12 @@ func (score *Score) Create() error {
     return result.Error
 }
 
+func GetScore(id uint) (score Score, err error) {
+    result := database.GetDB().Model(&Score{}).Preload("User").Preload("Lab").Where("id = ?", id).First(&score)
+    err =r result.Error
+    return
+}
+
 func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
     var userdata user.User
     c.User = user.User{
