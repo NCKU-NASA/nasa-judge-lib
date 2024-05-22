@@ -177,9 +177,13 @@ func (score *Score) Create() error {
     return result.Error
 }
 
-func GetScore(id uint) (score Score, err error) {
+func GetScore(id uint, usedeadline bool) (score Score, err error) {
     result := database.GetDB().Model(&Score{}).Preload("User").Preload("Lab").Where("id = ?", id).First(&score)
-    err =r result.Error
+    err = result.Error
+    if err != nil {
+        return
+    }
+    score.CalcScore(usedeadline)
     return
 }
 
