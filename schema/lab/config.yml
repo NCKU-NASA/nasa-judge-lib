@@ -76,7 +76,7 @@
         Message string `yaml:"message" json:"message"`
         Weight float32 `yaml:"weight" json:"weight"`
         Commands Commands `yaml:"commands" json:"commands,omitempty"`
-        Check map[string]int `yaml:"check" json:"check,omitempty"`
+        Dependencies map[string]int `yaml:"dependencies" json:"dependencies,omitempty"`
         Correct bool `yaml:"-" json:"correct"`
     }
   listtype: 'map[string][]CheckPoint'
