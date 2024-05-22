@@ -179,6 +179,7 @@ func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
         StudentId: c.User.StudentId,
         Email: c.User.Email,
     }
+    c.User.Fix()
     if c.User.Username != "" || c.User.StudentId != "" || c.User.Email != "" {
         userdata, err = user.GetUser(c.User)
         if err != nil {
