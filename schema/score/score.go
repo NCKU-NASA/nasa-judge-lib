@@ -172,6 +172,11 @@ func (score *Score) CalcScore(usedeadline bool) float32 {
     return score.Score
 }
 
+func (score *Score) Create() error {
+    result := database.GetDB().Model(&Score{}).Preload("User").Preload("Lab").Create(score)
+    return result.Error
+}
+
 func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
     var userdata user.User
     c.User = user.User{
