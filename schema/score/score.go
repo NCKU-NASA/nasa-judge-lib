@@ -29,6 +29,7 @@ type Scores struct {
     Scores []Score
     KeyField string
     ShowFields []string
+    UseDeadline bool
 }
 
 type ScoreFilter struct {
@@ -93,6 +94,7 @@ func (c Scores) MarshalJSON() ([]byte, error) {
         if result[score.Lab.LabId] == nil {
             result[score.Lab.LabId] = make(map[string][]Score)
         }
+        score.CalcScore(c.UseDeadline)
         usermap := score.User.ToMap()
         labdata := *(score.Lab)
         if usermap[c.KeyField].(string) != "" {
@@ -144,6 +146,30 @@ func (c *Scores) UnmarshalJSON(b []byte) error {
         }
     }
     return nil
+}
+
+func (score *Score) CalcScore(usedeadline bool) float32 {
+    var basescore float32
+    for _, allcheckpoint := range score.Result {
+        for _, checkpoint := range allcheckpoint {
+            if checkpoint.Correct {
+                basescore += checkpoint.Weight
+            }
+        }
+    }
+
+    if usedeadline {
+        score.Score = 0
+        for _, deadline := range score.Lab.Deadlines {
+            if score.CreatedAt.Before(deadline.Time) {
+                score.Score = basescore * deadline.Score
+                break
+            }
+        }
+    } else {
+        score.Score = basescore
+    }
+    return score.Score
 }
 
 func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
@@ -215,27 +241,8 @@ func (c ScoreFilter) GetScores(org Scores) (scores Scores, err error) {
         }
     }
     var tmpscores []Score
-    for idx, score := range scores.Scores {
-        var basescore float32
-        for _, allcheckpoint := range score.Result {
-            for _, checkpoint := range allcheckpoint {
-                if checkpoint.Correct {
-                    basescore += checkpoint.Weight
-                }
-            }
-        }
-
-        if c.UseDeadline {
-            scores.Scores[idx].Score = 0
-            for _, deadline := range score.Lab.Deadlines {
-                if score.CreatedAt.Before(deadline.Time) {
-                    scores.Scores[idx].Score = basescore * deadline.Score
-                    break
-                }
-            }
-        } else {
-            scores.Scores[idx].Score = basescore
-        }
+    for idx, _ := range scores.Scores {
+        scores.Scores[idx].CalcScore(c.UseDeadline)
         if c.Score != nil && scores.Scores[idx].Score == *(c.Score) {
             tmpscores = append(tmpscores, scores.Scores[idx])
         }
