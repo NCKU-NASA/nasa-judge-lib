@@ -75,7 +75,7 @@ func Commit(labId string) error {
     _, err = GetLab(labId)
     if err != nil {
         err = nil
-        result = database.GetDB().Model(&Lab{}).Preload("Promissions").Create(&lab)
+        result := database.GetDB().Model(&Lab{}).Preload("Promissions").Create(&lab)
         return result.Error
     } else {
         result := database.GetDB().Model(&Lab{}).Preload("Promissions").Where("lab_id = ?", lab.LabId).Updates(&lab)
