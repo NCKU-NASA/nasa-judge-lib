@@ -1,4 +1,4 @@
-package lab
+package {{ .name }}
 
 import (
     "fmt"
@@ -18,14 +18,14 @@ import (
     {{ end }}
 )
 
-type {{ .name }} {{ .base }}
+type {{ .name | title }} {{ .base }}
 
-type {{ .name }}s {{ .listtype }}
+type {{ .name | title }}s {{ .listtype }}
 
 
 {{ .init }}
 
-func (c *{{ .name }}s) Scan(value interface{}) (err error) {
+func (c *{{ .name | title }}s) Scan(value interface{}) (err error) {
     if val, ok := value.(datatypes.JSON); ok {
         err = json.Unmarshal([]byte(val), c)
     } else if val, ok := value.(json.RawMessage); ok {
@@ -36,23 +36,23 @@ func (c *{{ .name }}s) Scan(value interface{}) (err error) {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
     if *c == nil {
-        *c = {{ .name }}s{}
+        *c = {{ .name | title }}s{}
     }
     return
 }
 
-func (c {{ .name }}s) Value() (value driver.Value, err error) {
+func (c {{ .name | title }}s) Value() (value driver.Value, err error) {
     var tmp []byte
     tmp, err = json.Marshal(c)
     value = datatypes.JSON(tmp)
     return
 }
 
-func ({{ .name }}s) GormDataType() string {
+func ({{ .name | title }}s) GormDataType() string {
     return "json"
 }
 
-func ({{ .name }}s) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+func ({{ .name | title }}s) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	switch db.Dialector.Name() {
 	case "sqlite":
 		return "JSON"
@@ -64,9 +64,9 @@ func ({{ .name }}s) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	return ""
 }
 
-func (js {{ .name }}s) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+func (js {{ .name | title }}s) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
     if js == nil {
-        js = {{ .name }}s{}
+        js = {{ .name | title }}s{}
     }
     data, _ := js.Value()
     if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {

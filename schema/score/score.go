@@ -9,6 +9,8 @@ import (
     "github.com/NCKU-NASA/nasa-judge-lib/utils/database"
     "github.com/NCKU-NASA/nasa-judge-lib/schema/user"
     "github.com/NCKU-NASA/nasa-judge-lib/schema/lab"
+    "github.com/NCKU-NASA/nasa-judge-lib/schema/lab/content"
+    checkpoint "github.com/NCKU-NASA/nasa-judge-lib/schema/lab/check_point"
 )
 
 type Score struct {
@@ -18,8 +20,8 @@ type Score struct {
     LabID uint `json:"-"`
     Lab *lab.Lab `gorm:"foreignKey:LabID" json:"lab,omitempty"`
     Score float32 `gorm:"-" json:"score"`
-    Result lab.CheckPoints `json:"result,omitempty"`
-    Data lab.Contents `json:"data,omitempty"`
+    Result checkpoint.CheckPoints `json:"result,omitempty"`
+    Data content.Contents `json:"data,omitempty"`
     Stdout string `json:"stdout,omitempty"`
     Stderr string `json:"stderr,omitempty"`
     CreatedAt time.Time `json:"createdAt"`
@@ -71,8 +73,8 @@ func MapToScore(c map[string]any) (result Score) {
     result.User      = c["user"].(*user.User)
     result.Lab       = c["lab"].(*lab.Lab)
     result.Score     = c["score"].(float32)
-    result.Result    = c["result"].(lab.CheckPoints)
-    result.Data      = c["data"].(lab.Contents)
+    result.Result    = c["result"].(checkpoint.CheckPoints)
+    result.Data      = c["data"].(content.Contents)
     result.Stdout    = c["stdout"].(string)
     result.Stderr    = c["stderr"].(string)
     result.CreatedAt = c["createdAt"].(time.Time)

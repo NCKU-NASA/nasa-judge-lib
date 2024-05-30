@@ -1,10 +1,8 @@
-package lab
+package command
 
 import (
-    "fmt"
     "time"
-    "reflect"
-    "database/sql/driver"
+    "encoding/json"
 
     "gopkg.in/yaml.v3"
 )
@@ -25,16 +23,16 @@ func (c *duration) UnmarshalYAML(b *yaml.Node) error {
     return nil
 }
 
-func (c *duration) Scan(value interface{}) (err error) {
-    if val, ok := value.(int64); ok {
-        *c = duration(val)
-    } else {
-        err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
-    }
-    return
+func (c duration) MarshalJSON() ([]byte, error) {
+    return json.Marshal(float64(c) / float64(time.Second))
 }
 
-func (c duration) Value() (value driver.Value, err error) {
-    value = int64(c)
-    return
+func (c *duration) UnmarshalJSON(b []byte) error {
+    var tmp float64
+    err := json.Unmarshal(b, &tmp)
+    if err != nil {
+        return err
+    }
+    *c = duration(tmp * float64(time.Second))
+    return nil
 }

@@ -1,4 +1,4 @@
-package lab
+package content
 
 import (
     "fmt"
@@ -14,19 +14,22 @@ import (
     "gorm.io/gorm/schema"
 
     
+    contenttype "github.com/NCKU-NASA/nasa-judge-lib/enum/content_type"
+    
 )
 
-type Command struct {
-    Exec []string `yaml:"exec" json:"exec"`
-    Worker worker `yaml:"worker" json:"worker"`
+type Content struct {
+    Type contenttype.ContentType `yaml:"type" json:"type"`
+    Name string `yaml:"name" json:"name"`
+    Data string `yaml:"-" json:"data,omitempty"`
 }
 
-type Commands []Command
+type Contents []Content
 
 
 
 
-func (c *Commands) Scan(value interface{}) (err error) {
+func (c *Contents) Scan(value interface{}) (err error) {
     if val, ok := value.(datatypes.JSON); ok {
         err = json.Unmarshal([]byte(val), c)
     } else if val, ok := value.(json.RawMessage); ok {
@@ -37,23 +40,23 @@ func (c *Commands) Scan(value interface{}) (err error) {
         err = fmt.Errorf("sql: unsupported type %s", reflect.TypeOf(value))
     }
     if *c == nil {
-        *c = Commands{}
+        *c = Contents{}
     }
     return
 }
 
-func (c Commands) Value() (value driver.Value, err error) {
+func (c Contents) Value() (value driver.Value, err error) {
     var tmp []byte
     tmp, err = json.Marshal(c)
     value = datatypes.JSON(tmp)
     return
 }
 
-func (Commands) GormDataType() string {
+func (Contents) GormDataType() string {
     return "json"
 }
 
-func (Commands) GormDBDataType(db *gorm.DB, field *schema.Field) string {
+func (Contents) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	switch db.Dialector.Name() {
 	case "sqlite":
 		return "JSON"
@@ -65,9 +68,9 @@ func (Commands) GormDBDataType(db *gorm.DB, field *schema.Field) string {
 	return ""
 }
 
-func (js Commands) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+func (js Contents) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
     if js == nil {
-        js = Commands{}
+        js = Contents{}
     }
     data, _ := js.Value()
     if v, ok := db.Dialector.(*mysql.Dialector); ok && !strings.Contains(v.ServerVersion, "MariaDB") {

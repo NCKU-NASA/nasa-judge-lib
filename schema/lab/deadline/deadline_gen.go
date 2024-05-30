@@ -1,4 +1,4 @@
-package lab
+package deadline
 
 import (
     "fmt"

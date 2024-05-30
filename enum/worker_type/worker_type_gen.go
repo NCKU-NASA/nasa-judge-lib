@@ -30,12 +30,12 @@ type WorkerTypes []WorkerType
 const (
     Host WorkerType = iota
     Docker
-    VM
+    SSH
     Unknown WorkerType = 255
 )
 var set []string
 func init() {
-    set = []string{"Host", "Docker", "VM"}
+    set = []string{"Host", "Docker", "SSH"}
 }
 
 func (c WorkerType) String() string {

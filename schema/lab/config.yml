@@ -1,5 +1,5 @@
-- name: Deadline
-  mkdir: false
+- name: deadline
+  mkdir: true
   imports:
   - '"time"'
   - '"gopkg.in/yaml.v3"'
@@ -46,18 +46,93 @@
         }
         return nil
     }
-- name: Command
-  mkdir: false
-  imports: []
+- name: command
+  mkdir: true
+  imports:
+  - '"bytes"'
+  - '"path"'
+  - '"time"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/utils/instance"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/utils/docker"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/utils/host"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/schema/lab/worker"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/schema/lab/content"'
+  - 'workertype "github.com/NCKU-NASA/nasa-judge-lib/enum/worker_type"'
   base: |-
     struct {
         Exec []string `yaml:"exec" json:"exec"`
-        Worker worker `yaml:"worker" json:"worker"`
+        Timeout duration `yaml:"timeout" json:"timeout"`
+        Worker worker.Worker `yaml:"worker" json:"worker"`
     }
   listtype: '[]Command'
-  init: ""
-- name: Content
-  mkdir: false
+  init: |-
+    func (c Command) Run(dir string, contents content.Contents, env map[string]string, connectinfo map[workertype.WorkerType]map[string]instance.Instance) (stdout, stderr bytes.Buffer, result bool) {
+        var err error
+        if _, exist := connectinfo[c.Worker.WorkerType]; !exist {
+            connectinfo[c.Worker.WorkerType] = make(map[string]instance.Instance)
+        }
+        if _, exist := connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool]; !exist {
+            switch c.Worker.WorkerType {
+            case workertype.Host:
+                connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool], err = host.NewHost(dir, contents)
+                if err != nil {
+                    result = false
+                    return
+                }
+                err = connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool].Up()
+                if err != nil {
+                    result = false
+                    return
+                }
+            case workertype.Docker:
+                if _, exist2 := connectinfo[workertype.Host][""]; !exist2 {
+                    connectinfo[workertype.Host][""], err = host.NewHost(dir, contents)
+                    if err != nil {
+                        result = false
+                        return
+                    }
+                    err = connectinfo[workertype.Host][""].Up()
+                    if err != nil {
+                        result = false
+                        return
+                    }
+                }
+                if len(connectinfo[c.Worker.WorkerType]) <= 0 {
+                    connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool], err = docker.NewDocker(dir, path.Join("/tmp", connectinfo[workertype.Host][""].GetID(), "workdir"))
+                    if err != nil {
+                        result = false
+                        return
+                    }
+                    err = connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool].Up()
+                    if err != nil {
+                        result = false
+                        return
+                    }
+                } else {
+                    for _, v := range connectinfo[c.Worker.WorkerType] {
+                        connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool] = v
+                        break
+                    }
+                }
+            case workertype.SSH:
+                result = false
+                return
+            default: 
+                result = false
+                return
+            }
+            err = connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool].InitPool(c.Worker.WorkerPool)
+            if err != nil {
+                result = false
+                return
+            }
+        }
+        stdout, stderr, err = connectinfo[c.Worker.WorkerType][c.Worker.WorkerPool].Exec(c.Worker.WorkerPool, env, time.Duration(c.Timeout), c.Exec...)
+        result = err == nil
+        return
+    }
+- name: content
+  mkdir: true
   imports: 
   - 'contenttype "github.com/NCKU-NASA/nasa-judge-lib/enum/content_type"'
   base: |-
@@ -68,18 +143,70 @@
     }
   listtype: '[]Content'
   init: ""
-- name: CheckPoint
-  mkdir: false
-  imports: []
+- name: check_point
+  mkdir: true
+  imports:
+  - '"bytes"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/utils/instance"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/schema/lab/command"'
+  - '"github.com/NCKU-NASA/nasa-judge-lib/schema/lab/content"'
+  - 'workertype "github.com/NCKU-NASA/nasa-judge-lib/enum/worker_type"'
   base: |-
     struct {
         Message string `yaml:"message" json:"message"`
         Weight float32 `yaml:"weight" json:"weight"`
-        Commands Commands `yaml:"commands" json:"commands,omitempty"`
-        Dependencies map[string]int `yaml:"dependencies" json:"dependencies,omitempty"`
+        Commands command.Commands `yaml:"commands" json:"commands,omitempty"`
+        Dependencies map[string][]int `yaml:"dependencies" json:"dependencies,omitempty"`
         Correct bool `yaml:"-" json:"correct"`
     }
   listtype: 'map[string][]CheckPoint'
-  init: ""
+  init: |- 
+    func (c CheckPoint) Run(name string, index int, dir string, contents content.Contents, env map[string]string, connectinfo map[workertype.WorkerType]map[string]instance.Instance, checkpoints CheckPoints, result map[string]map[int]CheckPoint) (stdout, stderr bytes.Buffer) {
+        if _, exist := result[name]; !exist {
+            result[name] = make(map[int]CheckPoint)
+        }
+        if _, exist := result[name][index]; exist {
+            return
+        }
+        for k, v := range c.Dependencies {
+            if _, exist := result[k]; !exist {
+                result[k] = make(map[int]CheckPoint)
+            }
+            for _, num := range v {
+                if _, exist := result[k][num]; !exist {
+                    nowstdout, nowstderr := checkpoints[k][num].Run(k, num, dir, contents, env, connectinfo, checkpoints, result)
+                    stdout.Write(nowstdout.Bytes())
+                    stderr.Write(nowstderr.Bytes())
+                }
+                if !result[k][num].Correct {
+                    tmp := c
+                    tmp.Commands = nil
+                    tmp.Dependencies = nil
+                    tmp.Correct = false
+                    result[name][index] = tmp
+                    return
+                }
+            }
+        }
+        stdout.WriteString(fmt.Sprintf("%s/%d\n", name, index))
+        stderr.WriteString(fmt.Sprintf("%s/%d\n", name, index))
+        tmp := c
+        tmp.Commands = nil
+        tmp.Dependencies = nil
+        tmp.Correct = true
+        for _, command := range c.Commands {
+            nowstdout, nowstderr, status := command.Run(dir, contents, env, connectinfo)
+            stdout.Write(nowstdout.Bytes())
+            stderr.Write(nowstderr.Bytes())
+            if !status {
+                tmp.Correct = false
+                break
+            }
+        }
+        result[name][index] = tmp
+        stdout.WriteString("\n")
+        stderr.WriteString("\n")
+        return
+    }
 
 
