@@ -72,13 +72,20 @@ func Commit(labId string) error {
         return err
     }
     lab.LabId = labId
-    _, err = GetLab(labId)
+    oldlab, err := GetLab(labId)
     if err != nil {
         err = nil
         result := database.GetDB().Model(&Lab{}).Preload("Promissions").Create(&lab)
         return result.Error
     } else {
         result := database.GetDB().Model(&Lab{}).Preload("Promissions").Where("lab_id = ?", lab.LabId).Updates(&lab)
+        for _, nowgroup := range lab.Promissions {
+            if !slices.ContainsFunc(oldlab.Promissions, func(g user.Group) bool {
+                return g.Groupname == nowgroup.Groupname
+            }) {
+                database.GetDB().Model(&lab).Association("Promissions").Append(nowgroup)
+            }
+        }
         return result.Error
     }
 }
