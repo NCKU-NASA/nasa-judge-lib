@@ -86,6 +86,14 @@ func Commit(labId string) error {
                 database.GetDB().Model(&lab).Association("Promissions").Append(nowgroup)
             }
         }
+        
+        for _, oldgroup := range oldlab.Promissions {
+            if !slices.ContainsFunc(lab.Promissions, func(g user.Group) bool {
+                return g.Groupname == oldgroup.Groupname
+            }) {
+                database.GetDB().Model(&lab).Association("Promissions").Append(oldgroup)
+            }
+        }
         return result.Error
     }
 }

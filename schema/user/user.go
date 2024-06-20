@@ -76,13 +76,21 @@ func (user *User) Update() error {
         return fmt.Errorf("Username, Password and Email can't be empty.")
     }
     database.GetDB().Model(&User{}).Preload("Groups").Where("username = ?", user.Username).Updates(user)
-    var oldgroup []*Group
-    database.GetDB().Model(&user).Association("Groups").Find(&oldgroup)
+    var oldgroups []*Group
+    database.GetDB().Model(&user).Association("Groups").Find(&oldgroups)
     for _, nowgroup := range user.Groups {
-        if !slices.ContainsFunc(oldgroup, func(g *Group) bool {
+        if !slices.ContainsFunc(oldgroups, func(g *Group) bool {
             return g.Groupname == nowgroup.Groupname
         }) {
             database.GetDB().Model(&user).Association("Groups").Append(nowgroup)
+        }
+    }
+    
+    for _, oldgroup := range oldgroups {
+        if !slices.ContainsFunc(user.Groups, func(g *Group) bool {
+            return g.Groupname == oldgroup.Groupname
+        }) {
+            database.GetDB().Model(&user).Association("Groups").Delete(oldgroup)
         }
     }
     return nil
